@@ -22,3 +22,34 @@ Il est capable de répondre à des questions, d’apprendre de nouvelles répons
 ```bash
 git clone https://github.com/Diack12/clean-chatbot.git
 cd clean-chatbot
+
+### 2. Installer les dépendances
+
+```bash
+pip install -r requirements.txt
+
+### 3. Lancer l'application Streamlit
+
+```bash
+streamlit run app_streamlit.py
+
+##  Structure du projet
+.
+├── app_streamlit.py        # Code principal de l'application
+├── bot.py                  # Code du bot sans app/textuel ( sur le terminal)
+├── botbase.json            # Base de questions/réponses
+├── logs_apprentissage.json # Historique des ajouts utilisateurs
+├── requirements.txt        # Dépendances Python
+└── README.md               # Ce fichier
+## Auteur
+Faye Papa Djidiack
+Étudiant en ingénierie passionné par l'IA, la programmation et les systèmes embarqués.
+##  Déploiement
+Ce projet peut être déployé gratuitement sur Streamlit Cloud.
+1. Poussez votre code sur GitHub
+
+2. Connectez Streamlit Cloud à votre compte GitHub
+
+3. Choisissez le fichier app_streamlit.py
+
+4. Cliquez sur Deploy 
