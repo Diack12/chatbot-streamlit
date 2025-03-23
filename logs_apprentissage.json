@@ -1,0 +1,45 @@
+[
+    {
+        "date": "2025-03-23 14:56:16",
+        "question": "Est tu une IA ou un bot ?",
+        "reponse": "Il n'y a pas vraiment de difference mais je suis un bot si tu veux",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-23 15:01:20",
+        "question": "qui est tu",
+        "reponse": "Je suis simplement un bot.",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-23 15:02:11",
+        "question": "tu est quoi",
+        "reponse": "La meilleure IA au monde hahaha.",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-23 15:04:58",
+        "question": "En quelle année sommes nous ?",
+        "reponse": "En 2025 , tu est interessant toi hahaha.",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-23 15:05:51",
+        "question": "merci",
+        "reponse": "Je t'en prie.",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-23 16:55:12",
+        "question": [
+            "comment cv",
+            "The comment is paraphrased.",
+            "The comment was paraphrased.",
+            "The comment is paraphrase.",
+            "It's a comment.",
+            "It was a comment."
+        ],
+        "reponse": "Oui, je vais bien, merci ! Et toi ?",
+        "source": "Utilisateur"
+    }
+]
