@@ -6,12 +6,90 @@ from datetime import datetime
 
 
 from transformers import pipeline
+import requests
 
-paraphraser = pipeline("text2text-generation", model="Vamsi/T5_Paraphrase-Paws")
+def recherche_duckduckgo(query):
+    url = "https://api.duckduckgo.com/"
+    params = {
+        "q": query,
+        "format": "json",
+        "no_redirect": 1,
+        "no_html": 1
+    }
+    try:
+        r = requests.get(url, params=params)
+        data = r.json()
+        if data.get("AbstractText"):
+            return data["AbstractText"]
+        elif data.get("Answer"):
+            return data["Answer"]
+        else:
+            return None
+    except:
+        return None
+
+
+def reponse_wikipedia_intelligente(question):
+    search_url = "https://fr.wikipedia.org/w/api.php"
+    search_params = {
+        "action": "query",
+        "list": "search",
+        "srsearch": question,
+        "format": "json"
+    }
+
+    try:
+        response = requests.get(search_url, params=search_params)
+        data = response.json()
+
+        titre = data["query"]["search"][0]["title"]
+        summary_url = f"https://fr.wikipedia.org/api/rest_v1/page/summary/{titre.replace(' ', '_')}"
+        summary_response = requests.get(summary_url)
+        summary_data = summary_response.json()
+
+        return summary_data.get("extract", None)
+
+    except:
+        return None
+
+
+def cherche_partout(question):
+    print("🤖 Je cherche une réponse sur le web...")
+
+    wiki_result = reponse_wikipedia_intelligente(question)
+    if wiki_result:
+        print("📚 Trouvé sur Wikipédia :")
+        print(wiki_result)
+        return wiki_result, "Wikipedia"
+
+    ddg_result = recherche_duckduckgo(question)
+    if ddg_result:
+        print("🔎 Trouvé via DuckDuckGo :")
+        print(ddg_result)
+        return ddg_result, "DuckDuckGo"
+
+    return None, None
+
+
+paraphraser = pipeline("text2text-generation", model="ramsrigouthamg/t5_paraphraser")
 
 def generer_paraphrases(phrase):
-    resultats = paraphraser(f"paraphrase: {phrase} </s>", max_length=50, num_return_sequences=5)
-    return [r['generated_text'] for r in resultats]
+    resultats = paraphraser(
+        f"paraphrase: {phrase} </s>",
+        max_length=50,
+        num_return_sequences=3,
+        do_sample=True  # 🔧 ajout obligatoire pour générer plusieurs sorties
+    )
+    paraphrases = [r['generated_text'] for r in resultats]
+
+    # Filtrage facultatif
+    mots_origine = set(phrase.lower().split())
+    paraphrases_filtrees = [
+        p for p in paraphrases
+        if any(mot in p.lower() for mot in mots_origine)
+    ]
+
+    return paraphrases_filtrees if paraphrases_filtrees else paraphrases
 
 
 
@@ -89,6 +167,8 @@ while True:
     user_input = input("Pose ta question (ou 'quit') : ")
     if user_input.lower() in ['quit', 'exit']:
         break
+   
+
     elif user_input.lower() == "#connait":
      print("🤖 Je connais les questions suivantes :")
      for item in faq:
@@ -107,18 +187,31 @@ while True:
         print("🤖", reponses[index])
 
         
-    else:    # seuil trop bas
-        
-        response_input=input("Je ne comprends pas la question, peut tu me donner la réponse ? ")
-        variantes=generer_paraphrases(user_input)
-        
-        ajouter_nouvelle_entree([user_input] + variantes,response_input)
-        log_apprentissage([user_input] + variantes,response_input)
-        # Rechargement de la base mise à jour
+    else:
+      reponse, source = cherche_partout(user_input)
+
+      if reponse:
+        validation = input("Souhaites-tu que j'apprenne cette réponse ? (oui/non) : ").strip().lower()
+        if validation in ["oui", "yes", "y", "o"]:
+            variantes = generer_paraphrases(user_input)
+            ajouter_nouvelle_entree([user_input] + variantes, reponse)
+            log_apprentissage([user_input] + variantes, reponse, source=source)
+            # Rechargement
+            faq = charger_faq()
+            questions, reponses = preparer_questions_reponses(faq)
+            embeddings = model.encode(questions, convert_to_tensor=True)
+            print("✅ Réponse apprise automatiquement.")
+        else:
+            print("D'accord, je ne retiendrai pas cette réponse.")
+      else:
+        print("❌ Je n’ai trouvé aucune réponse automatique.")
+        response_input = input("Peux-tu m’enseigner la bonne réponse ? : ")
+        variantes = generer_paraphrases(user_input)
+        ajouter_nouvelle_entree([user_input] + variantes, response_input)
+        log_apprentissage([user_input] + variantes, response_input)
         faq = charger_faq()
         questions, reponses = preparer_questions_reponses(faq)
-
-        # Mise à jour des embeddings
         embeddings = model.encode(questions, convert_to_tensor=True)
+        print("✅ Réponse ajoutée manuellement.")
 
             

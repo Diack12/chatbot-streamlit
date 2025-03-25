@@ -1,68 +1,29 @@
-# 🟢 Importation des librairies nécessaires
+#  Importation des librairies nécessaires
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 import json
-import os
-from datetime import datetime   
+import requests
+from datetime import datetime
 from transformers import pipeline
 
-# 🔹 Initialisation de la mémoire de session (session_state)
-# Permet de conserver des infos entre deux interactions
-
-if "count" not in st.session_state:
-    st.session_state.count = 0
-
-# Chargement de la base de données locale
-if "base" not in st.session_state:
-    with open("botbase.json", "r", encoding="utf-8") as f:
-        st.session_state.base = json.load(f)
-
-# Chargement du modèle d'embedding (sentence-transformers)
-if "model" not in st.session_state:
-    st.session_state.model = SentenceTransformer("all-MiniLM-L6-v2")
-
-# Préparation des questions, réponses et vecteurs
-if "questions" not in st.session_state:
-    st.session_state.questions = []
-    st.session_state.reponses = []
-    for item in st.session_state.base:
-        for variante in item["questions"]:
-            st.session_state.questions.append(variante)
-            st.session_state.reponses.append(item["answer"])
-    st.session_state.embeddings = st.session_state.model.encode(st.session_state.questions, convert_to_tensor=True)
-
-# Initialisation de l’historique de conversation
-if "historique" not in st.session_state:
-    st.session_state.historique = []
-
-# Chargement du paraphraser (modèle de reformulation)
-if "paraphraser" not in st.session_state:
-    st.session_state.paraphraser = pipeline("text2text-generation", model="tuner007/pegasus_paraphrase")
-
-#  Génération automatique de paraphrases pour enrichir les variantes
-def generer_paraphrases(phrase):
-    resultats = st.session_state.paraphraser(f"paraphrase: {phrase} </s>", max_length=50, num_return_sequences=5)
-    return [r['generated_text'] for r in resultats]
-
-#  Sauvegarde d’une nouvelle question-réponse dans le fichier JSON
-def ajouter_nouvelle_entree(question, reponse, fichier="botbase.json"):
+#  Chargement ou initialisation de la base de données
+@st.cache_data
+def charger_faq():
     try:
-        with open(fichier, "r", encoding="utf-8") as f:
-            base = json.load(f)
+        with open("botbase.json", "r", encoding="utf-8") as f:
+            return json.load(f)
     except FileNotFoundError:
-        base = []
+        return []
 
-    nouvelle_entree = {
-        "questions": question,
-        "answer": reponse
-    }
-
-    base.append(nouvelle_entree)
-    with open(fichier, "w", encoding="utf-8") as f:
+#  Enregistrement dans le fichier JSON
+def ajouter_nouvelle_entree(question, reponse):
+    base = charger_faq()
+    base.append({"questions": question, "answer": reponse})
+    with open("botbase.json", "w", encoding="utf-8") as f:
         json.dump(base, f, indent=4, ensure_ascii=False)
 
-#  Enregistrement de l'apprentissage dans un log (pour audit)
-def log_apprentissage(question, reponse, source="Utilisateur", fichier="logs_apprentissage.json"):
+#  Logging d'apprentissage
+def log_apprentissage(question, reponse, source):
     log = {
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "question": question,
@@ -70,88 +31,121 @@ def log_apprentissage(question, reponse, source="Utilisateur", fichier="logs_app
         "source": source
     }
     try:
-        with open(fichier, "r", encoding="utf-8") as f:
+        with open("logs_apprentissage.json", "r", encoding="utf-8") as f:
             logs = json.load(f)
     except FileNotFoundError:
         logs = []
     logs.append(log)
-    with open(fichier, "w", encoding="utf-8") as f:
+    with open("logs_apprentissage.json", "w", encoding="utf-8") as f:
         json.dump(logs, f, indent=4, ensure_ascii=False)
 
-#  Interface Streamlit type chatbot
-st.title("💬 Mon Chatbot ")
+#  Recherche intelligente web
+@st.cache_data(show_spinner=False)
+def reponse_wikipedia_intelligente(question):
+    search_url = "https://fr.wikipedia.org/w/api.php"
+    params = {"action": "query", "list": "search", "srsearch": question, "format": "json"}
+    try:
+        r = requests.get(search_url, params=params)
+        titre = r.json()["query"]["search"][0]["title"]
+        summary_url = f"https://fr.wikipedia.org/api/rest_v1/page/summary/{titre.replace(' ', '_')}"
+        r = requests.get(summary_url)
+        return r.json().get("extract")
+    except:
+        return None
 
-# Affiche l’historique une seule fois (au chargement)
-if st.session_state.count == 0:
-    for message in st.session_state.historique:
-        if message["role"] == "user":
-            st.markdown(f"**🧍‍ Toi :** {message['content']}")
-        else:
-            st.markdown(f"**🤖 Bot :** {message['content']}")
-    st.markdown("---")
-    st.session_state.count += 1
+@st.cache_data(show_spinner=False)
+def recherche_duckduckgo(query):
+    try:
+        url = "https://api.duckduckgo.com/?q=" + query + "&format=json&no_redirect=1&no_html=1"
+        r = requests.get(url)
+        j = r.json()
+        return j.get("AbstractText") or j.get("Answer")
+    except:
+        return None
 
-#  Formulaire d'entrée utilisateur
-with st.form("chat_form", clear_on_submit=True):
+def cherche_partout(question):
+    wiki = reponse_wikipedia_intelligente(question)
+    if wiki:
+        return wiki, "Wikipedia"
+    ddg = recherche_duckduckgo(question)
+    if ddg:
+        return ddg, "DuckDuckGo"
+    return None, None
+
+#  Paraphraseur
+@st.cache_resource
+def get_paraphraser():
+    return pipeline("text2text-generation", model="ramsrigouthamg/t5_paraphraser")
+
+#  Préparation du modèle d'embedding
+@st.cache_resource
+def get_model():
+    return SentenceTransformer("all-MiniLM-L6-v2")
+
+def preparer_questions_reponses(base):
+    q, r = [], []
+    for item in base:
+        for variante in item["questions"]:
+            q.append(variante)
+            r.append(item["answer"])
+    return q, r
+
+#  Initialisation
+st.set_page_config(page_title="Chatbot IA", page_icon="🔎")
+st.title("💬 Chatbot Intelligent (local + web)")
+
+
+if "historique" not in st.session_state:
+    st.session_state.historique = []
+
+base = charger_faq()
+questions, reponses = preparer_questions_reponses(base)
+model = get_model()
+embeddings = model.encode(questions, convert_to_tensor=True)
+paraphraser = get_paraphraser()
+
+#  Entrée utilisateur
+with st.form("formulaire", clear_on_submit=True):
     user_input = st.text_input("Pose ta question :", key="input")
     submitted = st.form_submit_button("Envoyer")
 
-#  Traitement de la question une fois soumise
 if submitted and user_input:
-    emb_user = st.session_state.model.encode(user_input, convert_to_tensor=True)
-    scores = util.cos_sim(emb_user, st.session_state.embeddings)[0]
+    emb_user = model.encode(user_input, convert_to_tensor=True)
+    scores = util.cos_sim(emb_user, embeddings)[0]
     score_max = scores.max().item()
     idx = scores.argmax().item()
 
     if score_max > 0.7:
-        reponse = st.session_state.reponses[idx]
+        reponse = reponses[idx]
+        st.session_state.historique.append((user_input, reponse))
     else:
-        reponse = "Je ne connais pas encore cette question. Tu peux m'apprendre la réponse en dessous."
-
-    #  Ajout de l’interaction à l’historique
-    st.session_state.historique.append({"role": "user", "content": user_input})
-    st.session_state.historique.append({"role": "bot", "content": reponse})
-
-    # Affichage de l’historique mis à jour
-    for message in st.session_state.historique:
-        if message["role"] == "user":
-            st.markdown(f"**🧍‍ Toi :** {message['content']}")
+        reponse, source = cherche_partout(user_input)
+        if reponse:
+            st.info(f"{reponse}\n(Source : {source})")
+            if st.button("Apprendre cette réponse ?"):
+                variantes = [user_input] + [r['generated_text'] for r in paraphraser(f"paraphrase: {user_input} </s>", max_length=50, num_return_sequences=2, do_sample=True)]
+                ajouter_nouvelle_entree(variantes, reponse)
+                log_apprentissage(variantes, reponse, source)
+                st.success("Réponse apprise !")
         else:
-            st.markdown(f"**🤖 Bot :** {message['content']}")
+            st.warning("Aucune réponse trouvée sur le web. Apprends-la moi !")
+            new_answer = st.text_input("Ta réponse :")
+            if new_answer:
+                variantes = [user_input] + [r['generated_text'] for r in paraphraser(f"paraphrase: {user_input} </s>", max_length=50, num_return_sequences=2, do_sample=True)]
+                ajouter_nouvelle_entree(variantes, new_answer)
+                log_apprentissage(variantes, new_answer, "Utilisateur")
+                st.success("Merci, j'ai appris une nouvelle réponse !")
+                st.session_state.historique.append((user_input, new_answer))
+
+#  Affichage de l'historique
+st.divider()
+st.subheader("📖 Historique de la conversation")
+for q, r in st.session_state.historique[::-1]:
+    st.markdown(f"**🧍️ Toi :** {q}")
+    st.markdown(f"**🤖 Bot :** {r}")
     st.markdown("---")
 
-    #  Si nouvelle question : propose à l’utilisateur de l’enseigner
-    if score_max <= 0.7:
-        with st.expander("Ajouter une réponse pour cette question"):
-            with st.form("add_form", clear_on_submit=True):
-                new_answer = st.text_input("✍️ Ta réponse :", key="new_answer")
-                submitted_new = st.form_submit_button("Enregistrer")
-
-            if submitted_new and new_answer:
-                paraphrases = generer_paraphrases(user_input)
-                st.session_state.base.append({
-                    "questions": [user_input] + paraphrases,
-                    "answer": new_answer
-                })
-                st.session_state.questions.append(user_input)
-                st.session_state.reponses.append(new_answer)
-                for p in paraphrases:
-                    st.session_state.questions.append(p)
-                    st.session_state.reponses.append(new_answer)
-                st.session_state.embeddings = st.session_state.model.encode(st.session_state.questions, convert_to_tensor=True)
-                ajouter_nouvelle_entree([user_input] + paraphrases, new_answer)
-                log_apprentissage([user_input] + paraphrases, new_answer)
-                st.success("Merci ! J'ai appris une nouvelle réponse")
-
-#  Bouton de réinitialisation de session
-st.divider()
-if st.button("🔄 Réinitialiser la session"):
-    for key in ["questions", "reponses", "embeddings", "historique"]:
-        if key in st.session_state:
-            del st.session_state[key]
+#  Reset session
+if st.button("🔄 Réinitialiser"):
+    st.session_state.historique = []
     st.session_state.clear()
-
-#  Voir tout ce que le bot sait
-if st.button("📃 Voir toutes les questions connues"):
-    for item in st.session_state.base:
-        st.markdown("- " + ", ".join(item["questions"]))

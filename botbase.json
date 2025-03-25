@@ -352,13 +352,69 @@
     },
     {
         "questions": [
-            "comment cv",
-            "The comment is paraphrased.",
-            "The comment was paraphrased.",
-            "The comment is paraphrase.",
-            "It's a comment.",
-            "It was a comment."
+            "comment cv"
         ],
         "answer": "Oui, je vais bien, merci ! Et toi ?"
+    },
+    {
+        "questions": [
+            "Qui est le plus gros menteur au monde",
+            " menteur au monde"
+        ],
+        "answer": "Comment le saurais je ? hahahaha"
+    },
+    {
+        "questions": [
+            "Les cieux sont vastes",
+            "Les cieux sont larges.",
+            "Les cieux sont des objets vastes."
+        ],
+        "answer": "Mais pas autant que l'univers"
+    },
+    {
+        "questions": [
+            "Le monde est large,mais a quel point ?",
+            "Is it true that Le monde est large?",
+            "It was said that Le monde est large.",
+            "\"Le monde est large, is a quel point?\"",
+            "Is it a quel point?",
+            "Le monde est large, is a quel point?"
+        ],
+        "answer": "Au dela de ton imagination je dirais"
+    },
+    {
+        "questions": [
+            "c'est quoi une diode",
+            "What's the basis for diode?",
+            "How to make an OLED diode?"
+        ],
+        "answer": "Une diode électroluminescente est un dispositif opto-électronique fait de matériau semi-conducteur, capable d'émettre de la lumière lorsqu'il est parcouru par un courant électrique. Une diode électroluminescente ne laisse passer le courant électrique que dans un seul sens et produit un rayonnement monochromatique ou polychromatique non cohérent par conversion d'énergie électrique lorsqu'un courant la traverse."
+    },
+    {
+        "questions": [
+            "Donald trump ?",
+            "What is Donald Trump thinking about us who is a Donald Trump?",
+            "Could Trump still win, but was it a successful 2016 election?",
+            "What are the reasons for Donald Trump's popularity?"
+        ],
+        "answer": "Il est le 45e et 47e president des Etats-Unis"
+    },
+    {
+        "questions": [
+            "Qui est Ousmane Sonko ?",
+            "Who is Ousmane Sonko?",
+            "Who is Ousmane Sonko?",
+            "Who is Ousmane Sonko?"
+        ],
+        "answer": "Ousmane Sonko, né le 15 juillet 1974 à Thiès, est un homme d'État sénégalais. Il est Premier ministre depuis le 2 avril 2024."
+    },
+    {
+        "questions": [
+            "Bassirou Diomaye Faye",
+            "Bassirou Diomaye Faye",
+            "Bassirou Diomaye Faye Fania Batalisao. Bassirou Diomaye Faye.",
+            "Bassirou Diomaye Faye: How is the music of Bassirou Diomaye Faye influenced?"
+        ],
+        "answer": "Bassirou Diomaye Faye, né le 25 mars 1980 à Ndiaganiao, est un homme d'État sénégalais, président de la république du Sénégal depuis le 2 avril 2024."
     }
 ]

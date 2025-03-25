@@ -41,5 +41,73 @@
         ],
         "reponse": "Oui, je vais bien, merci ! Et toi ?",
         "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-24 02:54:25",
+        "question": [
+            "Les cieux sont vastes",
+            "Les cieux sont larges.",
+            "Les cieux sont vastes.",
+            "Les cieux sont des objets vastes."
+        ],
+        "reponse": "Mais pas autant que l'univers",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-24 21:07:41",
+        "question": [
+            "Le monde est large,mais a quel point ?",
+            "Is it true that Le monde est large?",
+            "It was said that Le monde est large.",
+            "\"Le monde est large, is a quel point?\"",
+            "Is it a quel point?",
+            "Le monde est large, is a quel point?"
+        ],
+        "reponse": "Au dela de ton imagination je dirais",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-25 00:23:36",
+        "question": [
+            "c'est quoi une diode",
+            "C'est quoi?",
+            "What's the basis for diode?",
+            "How to make an OLED diode?"
+        ],
+        "reponse": "Une diode électroluminescente est un dispositif opto-électronique fait de matériau semi-conducteur, capable d'émettre de la lumière lorsqu'il est parcouru par un courant électrique. Une diode électroluminescente ne laisse passer le courant électrique que dans un seul sens et produit un rayonnement monochromatique ou polychromatique non cohérent par conversion d'énergie électrique lorsqu'un courant la traverse.",
+        "source": "Wikipedia"
+    },
+    {
+        "date": "2025-03-25 00:25:37",
+        "question": [
+            "Donald trump ?",
+            "What is Donald Trump thinking about us who is a Donald Trump?",
+            "Could Trump still win, but was it a successful 2016 election?",
+            "What are the reasons for Donald Trump's popularity?"
+        ],
+        "reponse": "Il est le 45e et 47e president des Etats-Unis",
+        "source": "Utilisateur"
+    },
+    {
+        "date": "2025-03-25 00:41:52",
+        "question": [
+            "Qui est Ousmane Sonko ?",
+            "Who is Ousmane Sonko?",
+            "Who is Ousmane Sonko?",
+            "Who is Ousmane Sonko?"
+        ],
+        "reponse": "Ousmane Sonko, né le 15 juillet 1974 à Thiès, est un homme d'État sénégalais. Il est Premier ministre depuis le 2 avril 2024.",
+        "source": "Wikipedia"
+    },
+    {
+        "date": "2025-03-25 00:47:02",
+        "question": [
+            "Bassirou Diomaye Faye",
+            "Bassirou Diomaye Faye",
+            "Bassirou Diomaye Faye Fania Batalisao. Bassirou Diomaye Faye.",
+            "Bassirou Diomaye Faye: How is the music of Bassirou Diomaye Faye influenced?"
+        ],
+        "reponse": "Bassirou Diomaye Faye, né le 25 mars 1980 à Ndiaganiao, est un homme d'État sénégalais, président de la république du Sénégal depuis le 2 avril 2024.",
+        "source": "Wikipedia"
     }
 ]
