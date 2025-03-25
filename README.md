@@ -1,3 +1,4 @@
+
 # 🤖 Chatbot IA avec Streamlit
 
 Un petit assistant intelligent construit avec **Python**, **Streamlit**, et **Transformers**.  
@@ -65,3 +66,4 @@ streamlit run app_streamlit.py
 2. Connectez Streamlit Cloud à votre compte GitHub  
 3. Choisissez `app_streamlit.py` comme script principal  
 4. Cliquez sur **Deploy** 🚀
+
